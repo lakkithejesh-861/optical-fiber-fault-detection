@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FiberAI — Real AI Detection</title>
+    <style>
+        body {
+            background: #050a0f;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 { color: #00e5ff; font-size: 1.8rem; margin-bottom: 4px; }
+        .sub { color: #4a7a99; font-size: 0.85rem; margin-bottom: 16px; }
+
+        .badge {
+            display: inline-block;
+            background: #001a2a;
+            border: 1px solid #00e5ff;
+            color: #00e5ff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .section {
+            background: #0a1520;
+            border: 1px solid #0d3a5c;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 14px auto;
+            max-width: 600px;
+        }
+
+        .section-title {
+            color: #00e5ff;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid #0d3a5c;
+            padding-bottom: 8px;
+        }
+
+        input[type=range] {
+            width: 85%;
+            cursor: pointer;
+            accent-color: #00e5ff;
+            height: 6px;
+        }
+
+        .sensor-val {
+            color: #00e5ff;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .qbtn {
+            background: transparent;
+            border: 1px solid;
+            padding: 7px 12px;
+            margin: 4px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            letter-spacing: 1px;
+        }
+
+        .predict-btn {
+            background: transparent;
+            border: 2px solid #00e5ff;
+            color: #00e5ff;
+            padding: 13px 45px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            letter-spacing: 3px;
+            cursor: pointer;
+            border-radius: 6px;
+            margin: 14px;
+            transition: all 0.3s;
+        }
+
+        .predict-btn:hover {
+            background: #00e5ff;
+            color: #050a0f;
+        }
+
+        .result-box {
+            border: 2px solid #0d3a5c;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 10px auto;
+            max-width: 600px;
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s;
+        }
+
+        .lcd {
+            background: #0a1a0a;
+            border: 2px solid #2a5a2a;
+            border-radius: 6px;
+            padding: 12px 18px;
+            margin: 10px auto;
+            max-width: 280px;
+            font-family: monospace;
+            font-size: 0.95rem;
+            color: #00ff44;
+            text-shadow: 0 0 8px #00ff44;
+            line-height: 2;
+            box-shadow: inset 0 0 20px #001a00;
+        }
+
+        .leds {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 16px auto;
+        }
+
+        .led-item { text-align: center; }
+
+        .led-bulb {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid;
+            margin: 0 auto 6px;
+            transition: all 0.3s;
+        }
+
+        .led-label {
+            font-size: 0.68rem;
+            color: #4a7a99;
+        }
+
+        .buzzer-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #0f2030;
+            border: 1px solid #0d3a5c;
+            border-radius: 6px;
+            margin: 10px auto;
+            max-width: 600px;
+            text-align: left;
+        }
+
+        .buzzer-icon { font-size: 1.6rem; }
+
+        .buzzer-info {
+            font-size: 0.72rem;
+            color: #4a7a99;
+        }
+
+        .buzzer-info span {
+            display: block;
+            font-size: 0.85rem;
+            color: white;
+            margin-top: 3px;
+        }
+
+        .meter-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .meter-name {
+            font-size: 0.72rem;
+            color: #4a7a99;
+            min-width: 130px;
+            letter-spacing: 1px;
+        }
+
+        .meter-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .meter-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+
+        .meter-val {
+            font-size: 0.72rem;
+            color: #00e5ff;
+            min-width: 70px;
+            text-align: right;
+        }
+
+        .hist-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+        }
+
+        .hist-table th {
+            padding: 8px;
+            color: #4a7a99;
+            font-weight: normal;
+            text-align: left;
+            border-bottom: 1px solid #0d3a5c;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+        }
+
+        .hist-table td {
+            padding: 8px;
+            border-bottom: 1px solid #0d3a5c22;
+        }
+
+        .fbadge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.68rem;
+            border: 1px solid;
+            letter-spacing: 1px;
+        }
+
+        .loading {
+            color: #4a7a99;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
+        }
+
+        @keyframes ledBlink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>⚡ FiberAI — Real AI Detection</h1>
+<p class="sub">
+    Thejesh &nbsp;|&nbsp; ECE AIML &nbsp;|&nbsp;
+    Veltech College of Engineering
+</p>
+
+<div class="badge">
+    🤖 POWERED BY REAL AI — rf_model.pkl — 100% Accuracy
+</div>
+
+<!-- INPUT -->
+<div class="section">
+    <div class="section-title">📡 SENSOR INPUT — ESP32 GPIO34</div>
+
+    <input type="range" id="slider"
+        min="0" max="4095" value="4000"
+        oninput="updateSlider(this.value)">
+
+    <div class="sensor-val" id="sliderVal">4000</div>
+
+    <p style="color:#4a7a99;font-size:0.72rem;margin-bottom:12px;">
+        0 = BREAK &nbsp;|&nbsp; 4095 = NORMAL
+    </p>
+
+    <div>
+        <button class="qbtn"
+            style="border-color:#00ff88;color:#00ff88;"
+            onclick="setVal(4000)">✅ NORMAL</button>
+        <button class="qbtn"
+            style="border-color:#ffcc00;color:#ffcc00;"
+            onclick="setVal(3000)">⚠️ CONNECTOR</button>
+        <button class="qbtn"
+            style="border-color:#ffcc00;color:#ffcc00;"
+            onclick="setVal(2000)">⚠️ BENDING</button>
+        <button class="qbtn"
+            style="border-color:#ff8800;color:#ff8800;"
+            onclick="setVal(1200)">🔴 HI-ATTEN</button>
+        <button class="qbtn"
+            style="border-color:#ff3355;color:#ff3355;"
+            onclick="setVal(200)">💥 BREAK</button>
+    </div>
+</div>
+
+<!-- PREDICT BUTTON -->
+<button class="predict-btn" onclick="predict()">
+    ▶ &nbsp; RUN REAL AI PREDICTION
+</button>
+<p style="color:#4a7a99;font-size:0.72rem;margin-top:-8px;">
+    Uses rf_model.pkl — Trained Random Forest
+</p>
+
+<!-- RESULT -->
+<div class="result-box" id="resultBox">
+    <p style="color:#4a7a99;letter-spacing:2px;">
+        ▷ &nbsp; AWAITING INPUT
+    </p>
+    <p style="color:#4a7a99;font-size:0.75rem;margin-top:6px;">
+        Click RUN REAL AI PREDICTION
+    </p>
+</div>
+
+<!-- LCD -->
+<div class="lcd" id="lcd">
+    &nbsp;FiberAI  v2.0&nbsp;&nbsp;&nbsp;&nbsp;<br>
+    &nbsp;Ready...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</div>
+
+<!-- LEDs -->
+<div class="leds">
+    <div class="led-item">
+        <div class="led-bulb" id="ledG"
+            style="border-color:#00ff88;background:#00ff8811;"></div>
+        <div class="led-label">GPIO27<br>NORMAL</div>
+    </div>
+    <div class="led-item">
+        <div class="led-bulb" id="ledY"
+            style="border-color:#ffcc00;background:#ffcc0011;"></div>
+        <div class="led-label">GPIO26<br>WARNING</div>
+    </div>
+    <div class="led-item">
+        <div class="led-bulb" id="ledR"
+            style="border-color:#ff3355;background:#ff335511;"></div>
+        <div class="led-label">GPIO25<br>CRITICAL</div>
+    </div>
+</div>
+
+<!-- BUZZER -->
+<div class="buzzer-wrap">
+    <span class="buzzer-icon" id="buzzerIcon">🔇</span>
+    <div class="buzzer-info">
+        BUZZER — GPIO2
+        <span id="buzzerText">SILENT — No fault detected</span>
+    </div>
+</div>
+
+<!-- SIGNAL METERS -->
+<div class="section">
+    <div class="section-title">SIGNAL PARAMETERS</div>
+    <div style="max-width:450px;margin:0 auto;">
+        <div class="meter-row">
+            <span class="meter-name">OUTPUT POWER</span>
+            <div class="meter-bar">
+                <div class="meter-fill" id="mP"
+                style="width:0%;background:linear-gradient(90deg,#00e5ff,#00ff88)"></div>
+            </div>
+            <span class="meter-val" id="mPV">— W</span>
+        </div>
+        <div class="meter-row">
+            <span class="meter-name">SNR</span>
+            <div class="meter-bar">
+                <div class="meter-fill" id="mS"
+                style="width:0%;background:linear-gradient(90deg,#00ff88,#ffcc00)"></div>
+            </div>
+            <span class="meter-val" id="mSV">— dB</span>
+        </div>
+        <div class="meter-row">
+            <span class="meter-name">ATTENUATION</span>
+            <div class="meter-bar">
+                <div class="meter-fill" id="mA"
+                style="width:0%;background:linear-gradient(90deg,#ffcc00,#ff3355)"></div>
+            </div>
+            <span class="meter-val" id="mAV">— dB/km</span>
+        </div>
+        <div class="meter-row">
+            <span class="meter-name">NOISE</span>
+            <div class="meter-bar">
+                <div class="meter-fill" id="mN"
+                style="width:0%;background:linear-gradient(90deg,#ff8800,#ff3355)"></div>
+            </div>
+            <span class="meter-val" id="mNV">—</span>
+        </div>
+    </div>
+</div>
+
+<!-- HISTORY -->
+<div class="section">
+    <div class="section-title">📋 PREDICTION HISTORY</div>
+    <div style="overflow:auto;max-height:250px;">
+        <table class="hist-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>SENSOR</th>
+                    <th>FAULT</th>
+                    <th>DISTANCE</th>
+                    <th>STATUS</th>
+                    <th>POWER</th>
+                </tr>
+            </thead>
+            <tbody id="histBody">
+                <tr>
+                    <td colspan="6"
+                        style="text-align:center;color:#4a7a99;padding:16px;">
+                        No predictions yet
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<p style="font-size:0.7rem;color:#4a7a99;margin-top:10px;">
+    AI-Based Optical Fiber Fault Detection &nbsp;|&nbsp;
+    Thejesh &nbsp;|&nbsp; ECE AIML &nbsp;|&nbsp;
+    Veltech College &nbsp;|&nbsp;
+    Random Forest 100% + LSTM 98%
+</p>
+
+<script>
+var predCount = 0;
+
+function updateSlider(val) {
+    document.getElementById('sliderVal').textContent = val;
+}
+
+function setVal(val) {
+    document.getElementById('slider').value = val;
+    document.getElementById('sliderVal').textContent = val;
+}
+
+async function predict() {
+    var sv = parseInt(document.getElementById('slider').value);
+
+    // Show loading
+    var rb = document.getElementById('resultBox');
+    rb.style.borderColor = '#0d3a5c';
+    rb.innerHTML = '<p class="loading">🤖 REAL AI IS PREDICTING...</p>';
+
+    try {
+        // Send to Python Flask AI
+        var response = await fetch('/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sensor: sv })
+        });
+
+        var data = await response.json();
+
+        if (!data.success) {
+            rb.innerHTML =
+                '<p style="color:#ff3355;">Error: ' + data.error + '</p>';
+            return;
+        }
+
+        // Color based on status
+        var color;
+        if (data.status === 'NORMAL')       color = '#00ff88';
+        else if (data.status === 'WARNING') color = '#ffcc00';
+        else                                color = '#ff3355';
+
+        // Update Result Box
+        rb.style.borderColor = color;
+        rb.style.boxShadow   = '0 0 20px ' + color + '22';
+        rb.innerHTML =
+            '<div style="font-size:2.8rem;margin-bottom:8px;">' +
+                data.icon + '</div>' +
+            '<div style="color:' + color + ';font-size:1.6rem;' +
+                'font-weight:bold;letter-spacing:3px;margin-bottom:6px;">' +
+                data.fault.toUpperCase() + '</div>' +
+            '<div style="color:#4a7a99;font-size:0.82rem;margin-bottom:10px;">' +
+                (data.distance > 0
+                    ? '📍 Fault at ' + data.distance + ' km'
+                    : '📍 No fault — Fiber healthy') +
+            '</div>' +
+            '<div style="border:1px solid ' + color + ';color:' + color + ';' +
+                'padding:5px 14px;border-radius:4px;font-size:0.8rem;' +
+                'letter-spacing:2px;">' + data.status + '</div>' +
+            '<div style="margin-top:8px;font-size:0.7rem;color:#4a7a99;">' +
+                '🤖 Predicted by rf_model.pkl' +
+            '</div>';
+
+        // Update LCD
+        var lcd = document.getElementById('lcd');
+        if (data.fault === 'Normal') {
+            lcd.innerHTML =
+                '&nbsp;FLT:Normal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>' +
+                '&nbsp;STATUS: NORMAL&nbsp;&nbsp;';
+        } else {
+            var l1 = ('FLT:' + data.fault).substring(0,16);
+            var l2 = ('D:' + data.distance + 'km ' + data.status).substring(0,16);
+            lcd.innerHTML = '&nbsp;' + l1 + '<br>&nbsp;' + l2;
+        }
+
+        // Reset LEDs
+        document.getElementById('ledG').style.background = '#00ff8811';
+        document.getElementById('ledG').style.boxShadow  = 'none';
+        document.getElementById('ledG').style.animation  = 'none';
+        document.getElementById('ledY').style.background = '#ffcc0011';
+        document.getElementById('ledY').style.boxShadow  = 'none';
+        document.getElementById('ledY').style.animation  = 'none';
+        document.getElementById('ledR').style.background = '#ff335511';
+        document.getElementById('ledR').style.boxShadow  = 'none';
+        document.getElementById('ledR').style.animation  = 'none';
+
+        // Turn ON correct LED
+        if (data.status === 'NORMAL') {
+            document.getElementById('ledG').style.background =
+                '#00ff88';
+            document.getElementById('ledG').style.boxShadow =
+                '0 0 16px #00ff88, 0 0 30px #00ff88';
+        } else if (data.status === 'WARNING') {
+            document.getElementById('ledY').style.background =
+                '#ffcc00';
+            document.getElementById('ledY').style.boxShadow =
+                '0 0 16px #ffcc00, 0 0 30px #ffcc00';
+        } else {
+            document.getElementById('ledR').style.background =
+                '#ff3355';
+            document.getElementById('ledR').style.boxShadow =
+                '0 0 16px #ff3355, 0 0 30px #ff3355';
+            document.getElementById('ledR').style.animation =
+                'ledBlink 0.5s infinite';
+        }
+
+        // Update Buzzer
+        var bi = document.getElementById('buzzerIcon');
+        var bt = document.getElementById('buzzerText');
+        if (data.status === 'NORMAL') {
+            bi.textContent = '🔇';
+            bt.textContent = 'SILENT — No fault';
+            bt.style.color = 'white';
+        } else if (data.status === 'WARNING') {
+            bi.textContent = '🔔';
+            bt.textContent = 'OFF — Warning only';
+            bt.style.color = '#ffcc00';
+        } else if (data.fault === 'Break') {
+            bi.textContent = '🔊';
+            bt.textContent = 'FAST BEEPING — Break Critical!';
+            bt.style.color = '#ff3355';
+        } else {
+            bi.textContent = '🔔';
+            bt.textContent = 'SLOW BEEPING — High Attenuation!';
+            bt.style.color = '#ff8800';
+        }
+
+        // Update Meters
+        document.getElementById('mP').style.width =
+            (data.output_power / 10 * 100) + '%';
+        document.getElementById('mS').style.width =
+            (data.snr / 40 * 100) + '%';
+        document.getElementById('mA').style.width =
+            Math.min(data.attenuation / 9 * 100, 100) + '%';
+        document.getElementById('mN').style.width =
+            (data.noise * 100) + '%';
+        document.getElementById('mPV').textContent =
+            data.output_power + ' W';
+        document.getElementById('mSV').textContent =
+            data.snr + ' dB';
+        document.getElementById('mAV').textContent =
+            data.attenuation + ' dB/km';
+        document.getElementById('mNV').textContent =
+            data.noise;
+
+        // Add to History
+        predCount++;
+        var tb = document.getElementById('histBody');
+        if (predCount === 1) tb.innerHTML = '';
+
+        var row = document.createElement('tr');
+        row.innerHTML =
+            '<td style="color:#4a7a99;">' + predCount + '</td>' +
+            '<td>' + data.sensor + '</td>' +
+            '<td><span class="fbadge" style="border-color:' + color +
+                ';color:' + color + ';">' + data.fault + '</span></td>' +
+            '<td>' + (data.distance > 0 ? data.distance+' km' : '—') + '</td>' +
+            '<td><span class="fbadge" style="border-color:' + color +
+                ';color:' + color + ';">' + data.status + '</span></td>' +
+            '<td style="color:#4a7a99;">' + data.output_power + ' W</td>';
+
+        tb.insertBefore(row, tb.firstChild);
+        while (tb.rows.length > 8) tb.deleteRow(tb.rows.length - 1);
+
+    } catch(e) {
+        rb.innerHTML =
+            '<p style="color:#ff3355;">❌ Connection Error!<br>' +
+            'Make sure app.py is running!</p>';
+    }
+}
+</script>
+
+</body>
+</html>
